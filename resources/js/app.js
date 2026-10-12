@@ -1,4 +1,4 @@
-import './bootstrap';
+import './bootstrap'; // axios الخاص بـ Breeze
 import 'bootstrap/dist/css/bootstrap.rtl.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../css/station.css';
@@ -9,7 +9,10 @@ import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { toast } from './toast';
 
-createInertiaApp({
+const root = document.getElementById('app');
+
+// صفحات الدخول/التسجيل Blade لا تحتوي #app، فلا نشغّل Inertia عليها
+if (root) createInertiaApp({
   title: t => (t ? `${t} — Station` : 'Station'),
   resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   setup({ el, App, props, plugin }) {

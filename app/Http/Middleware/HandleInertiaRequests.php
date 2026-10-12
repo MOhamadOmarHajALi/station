@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Middleware;
@@ -29,6 +30,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'unreadMessages' => fn () => $u && Gate::forUser($u)->allows('manage') ? ContactMessage::whereNull('read_at')->count() : 0,
             'currency' => config('station.currency'),
         ]);
     }

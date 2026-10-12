@@ -88,3 +88,10 @@ php artisan station:monthly-report --month=2026-10
 ```
 * * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
 ```
+
+---
+## إضافة: موقع المكتب (Landing) + نموذج تواصل + أبرز أعمالنا
+- عدّل بيانات مكتبك (الهاتف، البريد، العنوان، واتساب، السوشيال، الأرقام) من أعلى ملف `resources/js/Pages/Landing.vue` (قسم ✏️).
+- **صورك:** ضعها في `public/images/portfolio/` وغيّر المسارات في مصفوفة `works` (الصور الحالية SVG مؤقتة).
+- رسائل نموذج "تواصل معنا" تُحفظ في الجدول `contact_messages` وتظهر للمدير/المحاسب في صفحة **رسائل الموقع**، وتصل نسخة بالبريد للمدراء.
+- بعد فك الضغط نفّذ `php artisan migrate` (يُنشئ جدول الرسائل).

@@ -21,6 +21,7 @@ const nav = computed(() => [
   { href: '/customers', icon: 'bi-people', label: 'الزبائن', active: url.value.startsWith('/customers') },
   { href: '/photographers', icon: 'bi-camera', label: 'المصورون', active: url.value.startsWith('/photographers') },
   { href: '/reports/monthly', icon: 'bi-calendar3', label: 'التقرير الشهري', active: url.value.startsWith('/reports') },
+  ...(can.value.manage ? [{ href: '/messages', icon: 'bi-envelope', label: 'رسائل الموقع', active: url.value.startsWith('/messages'), badge: page.props.unreadMessages }] : []),
   ...(can.value.admin ? [{ href: '/users', icon: 'bi-shield-lock', label: 'المستخدمون والصلاحيات', active: url.value.startsWith('/users') }] : []),
 ]);
 
@@ -50,6 +51,7 @@ const logout = () => router.post('/logout');
         <nav class="side-nav">
           <Link v-for="n in nav" :key="n.href" :href="n.href" :class="{ active: n.active }">
             <i class="bi" :class="n.icon"></i> {{ n.label }}
+            <span v-if="n.badge" class="badge bg-warning text-dark ms-auto">{{ n.badge }}</span>
           </Link>
         </nav>
         <div class="side-foot">
