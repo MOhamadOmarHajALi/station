@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,5 +17,8 @@ class AppServiceProvider extends ServiceProvider
         $isAdmin = fn (User $u) => in_array(strtolower($u->email), config('station.admin_emails'), true);
         Gate::define('manage', $isAdmin);
         Gate::define('admin', $isAdmin);
+        if (env('APP_ENV') === 'production') {
+        URL::forceScheme('https');
+    }
     }
 }
