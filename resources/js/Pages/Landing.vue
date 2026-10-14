@@ -6,13 +6,13 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 const site = {
   name: 'Station',
   tagline: 'مكتب تصوير',
-  phone: '0000 000 0000',
-  whatsapp: '',                       // رقم واتساب بالصيغة الدولية بدون + مثل 9647700000000 (اتركه فارغًا لإخفاء الزر)
-  email: 'info@station.example',
-  address: 'اكتب عنوان المكتب هنا',
+  phone: '+963952831001',
+  whatsapp: '+963952831001',                       // رقم واتساب بالصيغة الدولية بدون + مثل 9647700000000 (اتركه فارغًا لإخفاء الزر)
+  email: 'Stationmedia442@gmail.com',
+  address: 'حلب - المحافظة - سوق الأنتاج',
   hours: 'يوميًا من 10 صباحًا حتى 9 مساءً',
   socials: [
-    { icon: 'bi-instagram', href: '#', label: 'Instagram' },
+    { icon: 'bi-instagram', href: 'https://instagram.com/station.media.service?srtk=MW9qcWM2MzY3dXZqNw%3D%3D', label: 'Instagram' },
     { icon: 'bi-facebook', href: '#', label: 'Facebook' },
     { icon: 'bi-tiktok', href: '#', label: 'TikTok' },
     { icon: 'bi-youtube', href: '#', label: 'YouTube' },
