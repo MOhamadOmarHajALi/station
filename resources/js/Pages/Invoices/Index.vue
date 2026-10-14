@@ -29,7 +29,12 @@ const del = i => confirm(`حذف الفاتورة ${i.number}؟`) && router.dele
           <td>{{ isIn ? i.customer?.name : (i.photographer?.name ?? i.title) }}</td>
           <td>{{ String(i.invoice_date).slice(0, 10) }}</td>
           <td>{{ money(i.total) }}</td>
-          <td class="text-end"><button v-if="can.manage" class="btn btn-sm btn-outline-danger" @click="del(i)"><i class="bi bi-trash"></i></button></td>
+          <td class="text-end text-nowrap">
+            <template v-if="can.manage">
+              <Link :href="`/invoices/${i.id}/edit`" class="btn btn-sm btn-outline-dark"><i class="bi bi-pencil"></i></Link>
+              <button class="btn btn-sm btn-outline-danger ms-1" @click="del(i)"><i class="bi bi-trash"></i></button>
+            </template>
+          </td>
         </tr>
         <tr v-if="!invoices.data.length"><td colspan="5" class="text-center text-secondary py-4">لا توجد فواتير بعد.</td></tr>
       </tbody>

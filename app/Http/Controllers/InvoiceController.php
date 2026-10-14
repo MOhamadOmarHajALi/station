@@ -15,6 +15,50 @@ class InvoiceController extends Controller
         return $r->query('type') === 'expense' ? 'expense' : 'income';
     }
 
+    private function rules(): array
+    {
+        return [
+            'invoice_date' => 'required|date',
+            'customer_id' => 'nullable|exists:customers,id',
+            'photographer_id' => 'nullable|exists:photographers,id',
+            'title' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required|string|max:255',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.price' => 'required|numeric|min:0',
+        ];
+    }
+
+    private function messages(): array
+    {
+        return [
+            'items.*.description.required' => 'اكتب وصف البند',
+            'items.*.price.required' => 'أدخل السعر',
+            'items.*.quantity.min' => 'الكمية يجب أن تكون أكبر من صفر',
+            'customer_id.required' => 'اختر الزبون',
+        ];
+    }
+
+    private function lookups(): array
+    {
+        return [
+            'customers' => Customer::orderBy('name')->get(['id', 'name']),
+            'photographers' => Photographer::orderBy('name')->get(['id', 'name', 'default_rate']),
+        ];
+    }
+
+    private function partyFields(string $type, array $data): array
+    {
+        return [
+            'invoice_date' => $data['invoice_date'],
+            'customer_id' => $type === 'income' ? $data['customer_id'] : null,
+            'photographer_id' => $type === 'expense' ? ($data['photographer_id'] ?? null) : null,
+            'title' => $data['title'] ?? null,
+            'notes' => $data['notes'] ?? null,
+        ];
+    }
+
     public function index(Request $r)
     {
         $type = $this->type($r);
@@ -32,44 +76,23 @@ class InvoiceController extends Controller
         $type = $this->type($r);
 
         return Inertia::render('Invoices/Create', [
+            'invoice' => null,
             'type' => $type,
             'number' => Invoice::nextNumber($type),
             'today' => now()->toDateString(),
-            'customers' => Customer::orderBy('name')->get(['id', 'name']),
-            'photographers' => Photographer::orderBy('name')->get(['id', 'name', 'default_rate']),
             'selectedPhotographer' => $r->query('photographer') ? (int) $r->query('photographer') : null,
-        ]);
+        ] + $this->lookups());
     }
 
     public function store(Request $r, InvoiceService $service)
     {
-        $data = $r->validate([
-            'type' => 'required|in:income,expense',
-            'invoice_date' => 'required|date',
-            'customer_id' => 'nullable|required_if:type,income|exists:customers,id',
-            'photographer_id' => 'nullable|exists:photographers,id',
-            'title' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.price' => 'required|numeric|min:0',
-        ], [
-            'items.*.description.required' => 'اكتب وصف البند',
-            'items.*.price.required' => 'أدخل السعر',
-            'items.*.quantity.min' => 'الكمية يجب أن تكون أكبر من صفر',
-            'customer_id.required_if' => 'اختر الزبون',
-        ]);
+        $type = $r->input('type') === 'expense' ? 'expense' : 'income';
+        $rules = $this->rules();
+        if ($type === 'income') $rules['customer_id'] = 'required|exists:customers,id';
+        $data = $r->validate($rules, $this->messages());
 
         try {
-            $invoice = $service->create([
-                'type' => $data['type'],
-                'invoice_date' => $data['invoice_date'],
-                'customer_id' => $data['type'] === 'income' ? $data['customer_id'] : null,
-                'photographer_id' => $data['type'] === 'expense' ? ($data['photographer_id'] ?? null) : null,
-                'title' => $data['title'] ?? null,
-                'notes' => $data['notes'] ?? null,
-            ], $data['items']);
+            $invoice = $service->create(['type' => $type] + $this->partyFields($type, $data), $data['items']);
         } catch (Throwable $e) {
             report($e);
             return back()->withInput()->with('error', 'تعذّر حفظ الفاتورة، لم يتم حفظ أي شيء. حاول مرة أخرى.');
@@ -81,6 +104,33 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         return Inertia::render('Invoices/Show', ['invoice' => $invoice->load(['items', 'customer:id,name', 'photographer:id,name'])]);
+    }
+
+    public function edit(Invoice $invoice)
+    {
+        return Inertia::render('Invoices/Create', [
+            'invoice' => $invoice->load('items'),
+            'type' => $invoice->type,
+            'number' => $invoice->number,
+            'today' => now()->toDateString(),
+            'selectedPhotographer' => null,
+        ] + $this->lookups());
+    }
+
+    public function update(Request $r, Invoice $invoice, InvoiceService $service)
+    {
+        $rules = $this->rules();
+        if ($invoice->type === 'income') $rules['customer_id'] = 'required|exists:customers,id';
+        $data = $r->validate($rules, $this->messages());
+
+        try {
+            $service->update($invoice, $this->partyFields($invoice->type, $data), $data['items']);
+        } catch (Throwable $e) {
+            report($e);
+            return back()->with('error', 'تعذّر حفظ التعديلات، لم يتغير شيء. حاول مرة أخرى.');
+        }
+
+        return redirect()->route('invoices.show', $invoice)->with('success', 'تم تعديل الفاتورة '.$invoice->number);
     }
 
     public function destroy(Invoice $invoice)

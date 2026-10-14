@@ -19,6 +19,6 @@
     <label class="form-check-label" for="remember">تذكرني</label>
   </div>
   <button class="btn btn-primary w-100">دخول</button>
-  <p class="text-center mt-3 mb-0">ليس لديك حساب؟ <a href="{{ route('register') }}">إنشاء حساب</a></p>
+
 </form>
 @endsection

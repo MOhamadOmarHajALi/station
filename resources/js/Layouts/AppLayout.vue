@@ -2,7 +2,6 @@
 import { Link, router, usePage, Head } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
 import { toasts, toast } from '../toast';
-import { roleLabel } from '../format';
 
 defineProps({ title: String });
 
@@ -22,7 +21,7 @@ const nav = computed(() => [
   { href: '/photographers', icon: 'bi-camera', label: 'المصورون', active: url.value.startsWith('/photographers') },
   { href: '/reports/monthly', icon: 'bi-calendar3', label: 'التقرير الشهري', active: url.value.startsWith('/reports') },
   ...(can.value.manage ? [{ href: '/messages', icon: 'bi-envelope', label: 'رسائل الموقع', active: url.value.startsWith('/messages'), badge: page.props.unreadMessages }] : []),
-  ...(can.value.admin ? [{ href: '/users', icon: 'bi-shield-lock', label: 'المستخدمون والصلاحيات', active: url.value.startsWith('/users') }] : []),
+  { href: '/portfolio', icon: 'bi-images', label: 'صور الموقع', active: url.value.startsWith('/portfolio') },
 ]);
 
 // رسائل النجاح/الخطأ القادمة من الخادم
@@ -55,7 +54,7 @@ const logout = () => router.post('/logout');
           </Link>
         </nav>
         <div class="side-foot">
-          <div class="mb-2">{{ user.name }} <span class="badge bg-light text-dark ms-1">{{ roleLabel(user.role) }}</span></div>
+          <div class="mb-2">{{ user.name }}</div>
           <button class="btn btn-sm btn-outline-light w-100" @click="logout"><i class="bi bi-box-arrow-left"></i> تسجيل الخروج</button>
         </div>
       </div>

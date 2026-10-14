@@ -5,6 +5,7 @@ import { money } from '../../format';
 
 const p = defineProps({ invoice: Object });
 const cur = usePage().props.currency;
+const can = usePage().props.can;
 const isIn = p.invoice.type === 'income';
 </script>
 
@@ -14,6 +15,7 @@ const isIn = p.invoice.type === 'income';
       <h1 class="page-title">{{ invoice.number }} <span class="badge fs-6" :class="isIn ? 'badge-in' : 'badge-ex'">{{ isIn ? 'وارد' : 'صادر' }}</span></h1>
       <div class="d-flex gap-2">
         <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> طباعة</button>
+        <Link v-if="can.manage" :href="`/invoices/${invoice.id}/edit`" class="btn btn-outline-dark"><i class="bi bi-pencil"></i> تعديل</Link>
         <Link :href="`/invoices?type=${invoice.type}`" class="btn btn-outline-dark">القائمة</Link>
       </div>
     </div>

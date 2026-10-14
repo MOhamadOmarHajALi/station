@@ -35,5 +35,7 @@ router.on('exception', e => {
 });
 router.on('invalid', e => {
   e.preventDefault();
+  const url = e.detail?.response?.request?.responseURL || '';
+  if (url.includes('/login')) { window.location.href = '/login'; return; } // انتهت الجلسة
   toast.error('استجابة غير متوقعة من الخادم.');
 });

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{Invoice, User};
+use App\Models\Invoice;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{Log, Mail};
@@ -34,7 +34,7 @@ class SendMonthlyReport extends Command
             $lines[] = "- {$p['name']} ({$p['percent']}%): ".number_format($amt, 2)." $cur";
         }
 
-        $emails = User::where('role', 'admin')->pluck('email')->all();
+        $emails = config('station.admin_emails');
         if (! $emails) {
             $this->warn('لا يوجد مدراء لإرسال التقرير إليهم.');
             return self::SUCCESS;

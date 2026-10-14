@@ -24,8 +24,9 @@ const stats = [
   { n: 950, suffix: '+', l: 'عميل سعيد' },
   { n: 40, suffix: '+', l: 'فعالية وحفل شهريًا' },
 ];
-// صور الأعمال: ضع صورك في public/images/portfolio واكتب مساراتها هنا
-const works = [
+// الصور تُدار من لوحة التحكم (صور الموقع). إن لم تُضف صور بعد تظهر هذه الصور المؤقتة
+const props = defineProps({ works: { type: Array, default: () => [] } });
+const placeholders = [
   { title: 'حفل زفاف', cat: 'wedding', src: '/images/portfolio/work-1.svg' },
   { title: 'جلسة بورتريه', cat: 'portrait', src: '/images/portfolio/work-2.svg' },
   { title: 'تصوير منتجات', cat: 'product', src: '/images/portfolio/work-3.svg' },
@@ -36,6 +37,8 @@ const works = [
   { title: 'افتتاح معرض', cat: 'event', src: '/images/portfolio/work-8.svg' },
   { title: 'منتجات متجر', cat: 'product', src: '/images/portfolio/work-9.svg' },
 ];
+const gallery = computed(() => (props.works.length ? props.works : placeholders));
+const hero = i => gallery.value[i % gallery.value.length].src;
 /* =================================================================== */
 
 const cats = [
@@ -67,7 +70,7 @@ const menu = ref(false);
 const active = ref('home');
 const cat = ref('all');
 const lb = ref(-1); // فهرس الصورة المفتوحة في المعرض المكبّر
-const filtered = computed(() => works.filter(w => cat.value === 'all' || w.cat === cat.value));
+const filtered = computed(() => gallery.value.filter(w => cat.value === 'all' || w.cat === cat.value));
 
 const form = useForm({ name: '', phone: '', email: '', service: '', message: '', website: '' });
 const sent = ref(false);
@@ -176,9 +179,9 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div class="prints up u3" aria-hidden="true">
-          <figure class="p1"><img :src="works[0].src" alt=""></figure>
-          <figure class="p2"><img :src="works[1].src" alt=""></figure>
-          <figure class="p3"><img :src="works[2].src" alt=""></figure>
+          <figure class="p1"><img :src="hero(0)" alt=""></figure>
+          <figure class="p2"><img :src="hero(1)" alt=""></figure>
+          <figure class="p3"><img :src="hero(2)" alt=""></figure>
         </div>
       </div>
 

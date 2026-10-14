@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,18 +12,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // admin = كل شيء + إدارة المستخدمين | accountant = إدارة البيانات | viewer = قراءة فقط
-        Gate::define('manage', fn (User $u) => in_array($u->role, ['admin', 'accountant']));
-        Gate::define('admin', fn (User $u) => $u->role === 'admin');
-
-        // أول مستخدم يسجّل في النظام يصبح مديرًا
-        User::creating(function (User $u) {
-            if (! User::query()->exists()) {
-                $u->role = 'admin';
-            }
-        });
-        if (env('APP_ENV') === 'production') {
-        URL::forceScheme('https');
-    }
+        // لا أدوار: كل من إيميله ضمن ADMIN_EMAILS هو مدير بكامل الصلاحيات
+        $isAdmin = fn (User $u) => in_array(strtolower($u->email), config('station.admin_emails'), true);
+        Gate::define('manage', $isAdmin);
+        Gate::define('admin', $isAdmin);
     }
 }

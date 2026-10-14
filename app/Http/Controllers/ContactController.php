@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{ContactMessage, User};
+use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Mail};
 use Throwable;
@@ -35,7 +35,7 @@ class ContactController extends Controller
 
         // إشعار بالبريد للمدراء (فشل البريد لا يُفقد الرسالة، فهي محفوظة في النظام)
         try {
-            $emails = User::where('role', 'admin')->pluck('email')->all();
+            $emails = config('station.admin_emails');
             if ($emails) {
                 Mail::raw(
                     "رسالة جديدة من موقع Station\n\nالاسم: {$msg->name}\nالهاتف: {$msg->phone}\n"

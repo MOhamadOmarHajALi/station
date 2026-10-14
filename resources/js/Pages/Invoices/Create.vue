@@ -6,12 +6,24 @@ import Field from '../../Components/Field.vue';
 import { money, cleanNum } from '../../format';
 
 const props = defineProps({
+  invoice: { type: Object, default: null }, // عند التعديل
   type: String, number: String, today: String, customers: Array, photographers: Array, selectedPhotographer: Number,
 });
+const editing = !!props.invoice;
 const isIn = props.type === 'income';
 const rateOf = id => parseFloat(props.photographers.find(p => p.id === Number(id))?.default_rate) || '';
 
-const form = useForm({
+const form = useForm(editing ? {
+  type: props.type,
+  invoice_date: String(props.invoice.invoice_date).slice(0, 10),
+  customer_id: props.invoice.customer_id ?? '',
+  photographer_id: props.invoice.photographer_id ?? '',
+  title: props.invoice.title ?? '',
+  notes: props.invoice.notes ?? '',
+  items: props.invoice.items.map(i => ({
+    description: i.description, quantity: String(parseFloat(i.quantity)), price: String(parseFloat(i.price)),
+  })),
+} : {
   type: props.type, invoice_date: props.today, customer_id: '', photographer_id: props.selectedPhotographer ?? '',
   title: '', notes: '',
   items: [{ description: props.selectedPhotographer ? 'أجرة تصوير' : '', quantity: '1', price: String(rateOf(props.selectedPhotographer)) }],
@@ -23,22 +35,28 @@ const num = (row, k, e) => { row[k] = cleanNum(e.target.value); e.target.value =
 const sub = r => (parseFloat(r.quantity) || 0) * (parseFloat(r.price) || 0);
 const total = computed(() => form.items.reduce((s, r) => s + sub(r), 0));
 
-// اختيار مصور يملأ أجرته الافتراضية في البند الأول
+// في الإنشاء فقط: اختيار مصور يملأ أجرته الافتراضية في البند الأول
 watch(() => form.photographer_id, id => {
+  if (editing) return;
   const r = rateOf(id), first = form.items[0];
   if (r && first) { if (!first.description) first.description = 'أجرة تصوير'; first.price = String(r); }
 });
 
 const err = (i, k) => form.errors[`items.${i}.${k}`];
-const submit = () => form
-  .transform(d => ({ ...d, items: d.items.map(r => ({ ...r, quantity: parseFloat(r.quantity) || 0, price: r.price === '' ? '' : parseFloat(r.price) })) }))
-  .post('/invoices');
+const submit = () => {
+  const f = form.transform(d => ({
+    ...d,
+    items: d.items.map(r => ({ ...r, quantity: parseFloat(r.quantity) || 0, price: r.price === '' ? '' : parseFloat(r.price) })),
+  }));
+  editing ? f.put(`/invoices/${props.invoice.id}`) : f.post('/invoices');
+};
+const back = editing ? `/invoices/${props.invoice?.id}` : `/invoices?type=${props.type}`;
 </script>
 
 <template>
-  <AppLayout :title="isIn ? 'فاتورة وارد' : 'فاتورة صادر'">
-    <h1 class="page-title mb-1">{{ isIn ? 'فاتورة وارد' : 'فاتورة صادر' }}</h1>
-    <div class="text-secondary mb-3">رقم الفاتورة: {{ number }}</div>
+  <AppLayout :title="editing ? 'تعديل فاتورة' : (isIn ? 'فاتورة وارد' : 'فاتورة صادر')">
+    <h1 class="page-title mb-1">{{ editing ? 'تعديل الفاتورة' : (isIn ? 'فاتورة وارد' : 'فاتورة صادر') }}</h1>
+    <div class="text-secondary mb-3">رقم الفاتورة: {{ number }} <span v-if="editing">· {{ isIn ? 'وارد' : 'صادر' }}</span></div>
 
     <form @submit.prevent="submit" class="panel p-4">
       <div class="row g-3 mb-3">
@@ -78,8 +96,8 @@ const submit = () => form
       <button type="button" class="btn btn-outline-dark mb-3" @click="addRow"><i class="bi bi-plus"></i> إضافة بند</button>
 
       <Field label="ملاحظات"><textarea v-model="form.notes" rows="2" class="form-control"></textarea></Field>
-      <button class="btn btn-primary" :disabled="form.processing"><span v-if="form.processing" class="spinner-border spinner-border-sm"></span> حفظ الفاتورة</button>
-      <Link :href="`/invoices?type=${type}`" class="btn btn-link">إلغاء</Link>
+      <button class="btn btn-primary" :disabled="form.processing"><span v-if="form.processing" class="spinner-border spinner-border-sm"></span> {{ editing ? 'حفظ التعديلات' : 'حفظ الفاتورة' }}</button>
+      <Link :href="back" class="btn btn-link">إلغاء</Link>
     </form>
   </AppLayout>
 </template>
