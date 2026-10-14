@@ -9,7 +9,7 @@ const site = {
   phone: '+963952831001',
   whatsapp: '+963952831001',                       // رقم واتساب بالصيغة الدولية بدون + مثل 9647700000000 (اتركه فارغًا لإخفاء الزر)
   email: 'Stationmedia442@gmail.com',
-  address: 'حلب - المحافظة - سوق الأنتاج',
+  address: 'حلب - المحافظة -خلف سوق الأنتاج',
   hours: 'يوميًا من 10 صباحًا حتى 9 مساءً',
   socials: [
     { icon: 'bi-instagram', href: 'https://instagram.com/station.media.service?srtk=MW9qcWM2MzY3dXZqNw%3D%3D', label: 'Instagram' },
